@@ -90,14 +90,23 @@ def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
     if (not isq7):
         x_labels = range(alpha.shape[0])
         ax.set_yticklabels(['']+text)
+        ax.set_xticks(x_labels)
         plt.xticks(ticks=x_labels, labels=x_labels)
+        plt.title(f'CTC forward matrix for {GT}')
 
     ax.set_xlabel("Time")
     ax.set_ylabel("Character")
 
-    if (isq6): plt.title(f'CTC forward matrix for {GT}\n Taken path is: {path}')
+    if (isq6):
+        ax_top = ax.secondary_xaxis("top")
+        ax_top.set_xlim(ax.get_xlim())  # Match the limits of the bottom x-axis
+        ax_top.tick_params(axis='x', bottom=False, top=True, labelbottom=False, labeltop=True)
+        top_x_labels = path  # Custom labels for the top x-axis
+        ax_top.set_xticks(x_labels)
+        ax_top.set_xticklabels(top_x_labels)
+        ax_top.set_xlabel("Tekn path")
+
     elif (isq7): plt.title(f'CTC forward matrix for the given data')
-    else: plt.title(f'CTC forward matrix for {GT}')
 
 
 def forwardPass(pred, GT, translation):
