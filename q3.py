@@ -113,7 +113,7 @@ def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
     
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(alpha.T, cmap='cividis',interpolation='nearest')
+    cax = ax.matshow(alpha.T, cmap='viridis',interpolation='nearest')
     fig.colorbar(cax)
 
     ax.tick_params(axis='x', bottom=True, top=False, labelbottom=True, labeltop=False)
