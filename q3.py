@@ -1,6 +1,15 @@
 import numpy as np, pickle as pkl, matplotlib.pyplot as plt
 import warnings
 
+'''
+IMPORTANT NOTE:
+
+when plotting the question 7 matrix, the aligned sequence is ommited from the plot.
+We did this since it is very long and essentially destroys the plot.
+The aligned path that CTC took is printed to the terminal!
+'''
+
+
 def main():
     warnings.filterwarnings('ignore')
 
@@ -98,7 +107,7 @@ def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
     
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(alpha.T, cmap='viridis',interpolation='nearest')
+    cax = ax.matshow(alpha.T, cmap='cividis',interpolation='nearest')
     fig.colorbar(cax)
 
     ax.tick_params(axis='x', bottom=True, top=False, labelbottom=True, labeltop=False)
