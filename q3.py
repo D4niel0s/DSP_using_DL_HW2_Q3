@@ -1,15 +1,25 @@
 import numpy as np, pickle as pkl, matplotlib.pyplot as plt
-
-
+import warnings
 
 def main():
-    ex5('aba')
+    warnings.filterwarnings('ignore')
 
-    ex6('aba')
-
-    ex7()
-
-    plt.show()
+    print("Which section(s) do you want to run? (Close plots to run next section)\n \
+          5 - Forward CTC without force alignment\n \
+          6 - Forward-backward CTC with force alignment\n \
+          7 - Forward-backward CTC on given data\n \
+          (Enter a list e.g 5,7 or a single number)")
+    
+    sections = tuple(input().split(','))
+    
+    for section in sections:
+        if section == '5':
+            ex5('aba')
+        elif section == '6':
+            ex6('aba')
+        elif section == '7':
+            ex7()
+        plt.show()
 
 
 def ex5(text_to_align):
@@ -33,10 +43,10 @@ def ex5(text_to_align):
     
     prob, forward_probs = forwardPass(pred,text_to_align,mapping)
 
+    print('#'*15 +'\n'+ 'section 5 output:')
     print(f'The probability of the sequence {text_to_align} is: {prob}')
+    print('#'*15)
     plotForwrdMat(forward_probs, text_to_align)
-
-
 
 def ex6(text_to_align):
     pred = np.zeros(shape=(5, 3), dtype=np.float32)
@@ -59,8 +69,10 @@ def ex6(text_to_align):
     
     prob, path, forward_probs = forwardPass_forceAlign(pred,text_to_align,mapping)
 
+    print('#'*15 +'\n'+ 'section 6 output:')
     print(f'The probability of the sequence {text_to_align} is: {prob}')
     print(f'The taken path is: {path}')
+    print('#'*15)
     plotForwrdMat(forward_probs, text_to_align, path=path, isq6=True)
 
 def ex7():
@@ -72,9 +84,13 @@ def ex7():
 
     prob, path, forward_probs = forwardPass_forceAlign(pred,GT,mapping)
     
+    print('#'*15 +'\n'+ 'section 7 output:')
     print(f'The probability of the sequence {GT} is: {prob}')
     print(f'The taken path is: {path}')
+    print('#'*15)
     plotForwrdMat(forward_probs, GT, isq7=True)
+
+
 
 def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
     text = addBlanks(GT)
@@ -109,6 +125,7 @@ def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
     elif (isq7): plt.title(f'CTC forward matrix for the given data')
 
 
+
 def forwardPass(pred, GT, translation):
     # pred - a T x n size matrix, where T is time and n is the vocabulary size
     # GT - a string, the ground truth audio
@@ -135,7 +152,6 @@ def forwardPass(pred, GT, translation):
 
 
     return res, alpha
-
 
 def forwardPass_forceAlign(pred, GT, translation):
     # pred - a T x n size matrix, where T is time and n is the vocabulary size
@@ -180,6 +196,7 @@ def forwardPass_forceAlign(pred, GT, translation):
     return res,path, alpha
 
 
+
 def addBlanks(s):
     res = "^"
     for c in s:
@@ -195,7 +212,6 @@ def initAlphaMatrix(pred,s, T,S, translation):
 
     return alpha
 
-
 def collapse(s):
     parts = s.split('^')
     res = ''
@@ -209,15 +225,6 @@ def collapse(s):
                     res += part[i]
 
     return res
-            
-
-            
-
-    
-
-
-
-
 
 
 
