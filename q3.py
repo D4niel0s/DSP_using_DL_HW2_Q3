@@ -2,11 +2,15 @@ import numpy as np, pickle as pkl, matplotlib.pyplot as plt
 import warnings
 
 '''
-IMPORTANT NOTE:
+IMPORTANT NOTE(s):
 
 when plotting the question 7 matrix, the aligned sequence is ommited from the plot.
 We did this since it is very long and essentially destroys the plot.
 The aligned path that CTC took is printed to the terminal!
+
+We also didn't quite understand how should we plot the back-trace matrix so it would be interpretable.
+The back-trace matrix is printed in the terminal where each entry has the letter to which it points to.
+(When plotting the matrix with colors like the forward CTC, it loses all interpretabiliyt since we store indices)
 '''
 
 
@@ -76,11 +80,12 @@ def ex6(text_to_align):
             '^':2
         }
     
-    prob, path, forward_probs = forwardPass_forceAlign(pred,text_to_align,mapping)
+    prob, path, forward_probs, backTrace = forwardPass_forceAlign(pred,text_to_align,mapping)
 
     print('#'*15 +'\n'+ 'section 6 output:')
     print(f'The probability of the sequence {text_to_align} is: {prob}')
     print(f'The taken path is: {path}')
+    printBackMat(backTrace, text_to_align)
     print('#'*15)
     plotForwrdMat(forward_probs, text_to_align, path=path, isq6=True)
 
@@ -91,11 +96,12 @@ def ex7():
     pred = data['acoustic_model_out_probs']
     GT = data['text_to_align']
 
-    prob, path, forward_probs = forwardPass_forceAlign(pred,GT,mapping)
+    prob, path, forward_probs, backTrace = forwardPass_forceAlign(pred,GT,mapping)
     
     print('#'*15 +'\n'+ 'section 7 output:')
     print(f'The probability of the sequence {GT} is: {prob}')
     print(f'The taken path is: {path}')
+    printBackMat(backTrace, GT)
     print('#'*15)
     plotForwrdMat(forward_probs, GT, isq7=True)
 
@@ -133,7 +139,12 @@ def plotForwrdMat(alpha, GT, path=None, isq6=False, isq7=False):
 
     elif (isq7): plt.title(f'CTC forward matrix for the given data')
 
+def printBackMat(pointers, GT):
+    text = addBlanks(GT)
 
+    pointers = np.array([[text[int(e)] for e in i] for i in pointers]).T
+
+    print(pointers)
 
 def forwardPass(pred, GT, translation):
     # pred - a T x n size matrix, where T is time and n is the vocabulary size
@@ -202,7 +213,7 @@ def forwardPass_forceAlign(pred, GT, translation):
 
     path = path[::-1]
 
-    return res,path, alpha
+    return res,path, alpha, backPointers
 
 
 
