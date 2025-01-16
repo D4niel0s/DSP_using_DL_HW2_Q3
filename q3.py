@@ -2,6 +2,12 @@ import numpy as np
 import librosa
 
 
+translation = {
+        'a':0,
+        'b':1,
+        '^':2
+    }
+
 def main():
     pred = np.zeros(shape=(5, 3), dtype=np.float32)
     pred[0][0] = 0.8
@@ -16,31 +22,19 @@ def main():
     pred[4][2] = 1.00
 
 
-    print(forwardPass_forceAlign(pred,"ab"))
+    print(forwardPass(pred,"ab"))
 
 
 def forwardPass(pred, GT):
     # pred - a T x n size matrix, where T is time and n is the vocabulary size
     # GT - a string, the ground truth audio
 
-    translation = {
-        'a':0,
-        'b':1,
-        '^':2
-    }
-
-    truth = "^"
-    for s in GT:
-        truth += s
-        truth += "^"
+    truth = addBlanks(GT)
 
     T = len(pred)
     S = len(truth)
     
-    alpha = np.zeros((T, S))
-    alpha[0][0] = pred[0][translation[truth[0]]]
-    alpha[0][1] = pred[0][translation[truth[1]]]
-
+    alpha = initAlphaMatrix(pred, truth, T, S)
 
     for t in range(1, T):
         for s in range(S):
@@ -49,10 +43,11 @@ def forwardPass(pred, GT):
                 alpha[t, s] += alpha[t - 1, s - 1]
             if s > 1 and truth[s] != truth[s - 2] and truth[s] != '^':
                 alpha[t, s] += alpha[t - 1, s - 2]
+
             alpha[t, s] *= pred[t, translation[truth[s]]]
             
-
     res = alpha[T-1][S-1] + alpha[T-1][S-2]
+
 
     return res
 
@@ -61,29 +56,16 @@ def forwardPass_forceAlign(pred, GT):
     # pred - a T x n size matrix, where T is time and n is the vocabulary size
     # GT - a string, the ground truth audio
 
-    pred = np.log(pred + 1e-13)
-
-    translation = {
-        'a':0,
-        'b':1,
-        '^':2
-    }
-
-    truth = "^"
-    for s in GT:
-        truth += s
-        truth += "^"
+    truth = addBlanks(GT)
 
     T = len(pred)
     S = len(truth)
     
-    alpha = np.zeros((T, S))
-    alpha[0][0] = pred[0][translation[truth[0]]]
-    alpha[0][1] = pred[0][translation[truth[1]]]
-
+    alpha = initAlphaMatrix(pred, truth, T, S)
     backPointers = np.zeros((T, S))
 
     for t in range(1, T):
+        print(f'{alpha=}')
         for s in range(S):
             max_prob = alpha[t - 1, s]
             backpointer = s
@@ -96,7 +78,7 @@ def forwardPass_forceAlign(pred, GT):
                 max_prob = alpha[t - 1, s - 2]
                 backpointer = s - 2
 
-            alpha[t, s] = max_prob + pred[t, translation[truth[s]]]
+            alpha[t, s] = max_prob * pred[t, translation[truth[s]]]
             backPointers[t, s] = backpointer
             
 
@@ -110,7 +92,23 @@ def forwardPass_forceAlign(pred, GT):
 
     path = path[::-1]
 
-    return np.exp(res),path
+    return res,path
+
+
+def addBlanks(s):
+    res = "^"
+    for c in s:
+        res += c
+        res += "^"
+
+    return res
+
+def initAlphaMatrix(pred,s, T,S):
+    alpha = np.zeros((T, S))
+    alpha[0][0] = pred[0][translation[s[0]]]
+    alpha[0][1] = pred[0][translation[s[1]]]
+
+    return alpha
 
 
 def collapse(s:str):
